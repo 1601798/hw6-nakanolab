@@ -20,8 +20,8 @@ class Maze(SearchProblem):
         self.goal_state = goal_state
         self.maze = maze
         # 必要に応じてこの下にコードを追加する
-
-
+        self.xmax = len(maze)
+        self.ymax = len(maze[0])
     
     def get_start_state(self):
         '''変更不可'''
@@ -29,8 +29,10 @@ class Maze(SearchProblem):
     
     def next_states(self, state):
         '''state からたどり着くことができる座標 (x, y) のリストを返すメソッド'''
-
-
+        x, y = state
+        neighbors = [(x + dx, y + dy) for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)]]
+        return [(x, y) for (x, y) in neighbors
+                if 0 <= x < self.xmax and 0 <= y < self.ymax and self.maze[x][y] == '.']
 
     def is_goal(self, state):
         '''変更不可'''
