@@ -15,7 +15,7 @@ class MazeVisualizer:
         if grid_size:
             self.grid_size = grid_size
         else:
-            self.grid_size = min(1200 // maze.ymax, 800 // maze.xmax)
+            self.grid_size = min(1200 // maze.ymax, 680 // maze.xmax)
         self.width = self.grid_size * maze.ymax
         self.height = self.grid_size * maze.xmax
         self.root = tk.Tk()
@@ -97,28 +97,24 @@ def load_maze(filename):
                 maze.append(line)
         return Maze(start, goal, maze)
 
-def view_mazes(directory):
-    for filename in sorted(glob.glob('%s/*/maze.txt' % directory)):
-        print(filename)
-        fields = filename.split(os.sep)
-        title = fields[-2]
-        try:
-            maze = load_maze(filename)
-        except Exception as e:
-            print('Error loading %s: %s' % (filename, e))
-            continue
-        try:
-            MazeVisualizer(maze, dfs, title)
-        except Exception as e:
-            print('Error viewing %s: %s' % (filename, e))
-
-def view_simple_maze():
-    maze = load_maze('simple_maze.txt')
-    MazeVisualizer(maze, dfs, 'simple maze')
+def view_maze(title, filename):
+    try:
+        maze = load_maze(filename)
+    except Exception as e:
+        print('Error loading %s: %s' % (filename, e))
+        return
+    try:
+        MazeVisualizer(maze, dfs, title)
+    except Exception as e:
+        print('Error viewing %s: %s' % (filename, e))
 
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        view_mazes(sys.argv[1])
+        filenames = sorted(glob.glob('%s/*/maze.txt' % sys.argv[1]))
+        for filename in filenames:
+            print(filename)
+            title = filename.split(os.sep)[-2]
+            view_maze(title, filename)
     else:
-        view_simple_maze()
+        view_maze('My maze', 'maze.txt')
