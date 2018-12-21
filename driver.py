@@ -23,8 +23,9 @@ class MazeVisualizer:
         self.root.geometry('%dx%d' % (self.width, self.height))
         self.canvas = tk.Canvas(self.root, width=self.width, height=self.height)
         self.canvas.pack()
+        text = '%s\n(%d x %d)' % (title, maze.ymax, maze.xmax)
         self.canvas.create_text(self.width // 2, self.height // 2,
-                                text=title, fill='black',
+                                text=text, fill='black', justify=tk.CENTER,
                                 font=('Helvetica', 48))
         self.root.bind('<Key>', self.animate)
         self.root.mainloop()
