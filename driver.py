@@ -29,7 +29,7 @@ class MazeVisualizer:
         self.root.bind('<Key>', self.animate)
         self.root.mainloop()
     
-    def draw_box(self, coordinate, color='gray'):
+    def draw_box(self, coordinate, color='gray', update=False):
         '''Only in this method, treat coordinate as (y, x).'''
         offset = 1
         (y, x) = coordinate
@@ -38,11 +38,12 @@ class MazeVisualizer:
                                      (x+1) * self.grid_size - offset,
                                      (y+1) * self.grid_size - offset,
                                      fill=color, outline='white')
-        self.canvas.update()
+        if update:
+            self.canvas.update()
 
     def draw_route(self, route):
         for coordinate in route:
-            self.draw_box(coordinate, 'orange')
+            self.draw_box(coordinate, 'orange', True)
     
     def draw_next_route(self):
         self.draw_route(self.routes[self.route_id])
