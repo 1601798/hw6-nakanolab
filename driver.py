@@ -1,3 +1,7 @@
+import glob
+import os
+import sys
+import time
 import tkinter as tk
 from dfs import dfs
 from maze import Maze
@@ -6,10 +10,12 @@ class MazeVisualizer:
     def __init__(self, maze, algorithm, title, grid_size=None):
         self.maze = maze
         self.algorithm = algorithm
+        self.routes = []
+        self.route_id = 0
         if grid_size:
             self.grid_size = grid_size
         else:
-            self.grid_size = min(640 // maze.ymax, 480 // maze.xmax)
+            self.grid_size = min(1200 // maze.ymax, 800 // maze.xmax)
         self.width = self.grid_size * maze.ymax
         self.height = self.grid_size * maze.xmax
         self.root = tk.Tk()
@@ -17,24 +23,34 @@ class MazeVisualizer:
         self.root.geometry('%dx%d' % (self.width, self.height))
         self.canvas = tk.Canvas(self.root, width=self.width, height=self.height)
         self.canvas.pack()
-        self.clear_canvas()
+        self.canvas.create_text(self.width // 2, self.height // 2,
+                                text=title, fill='black',
+                                font=('Helvetica', 48))
         self.root.bind('<Key>', self.animate)
         self.root.mainloop()
     
     def draw_box(self, coordinate, color='gray'):
         '''Only in this method, treat coordinate as (y, x).'''
-        offset = 2
+        offset = 1
         (y, x) = coordinate
         self.canvas.create_rectangle(x * self.grid_size,
                                      y * self.grid_size,
                                      (x+1) * self.grid_size - offset,
                                      (y+1) * self.grid_size - offset,
-                                     fill=color)
+                                     fill=color, outline='white')
         self.canvas.update()
 
-    def draw_path(self, path):
-        for coordinate in path:
+    def draw_route(self, route):
+        for coordinate in route:
             self.draw_box(coordinate, 'orange')
+    
+    def draw_next_route(self):
+        self.draw_route(self.routes[self.route_id])
+        if len(self.routes) > 1:
+            self.canvas.create_text(self.width // 2, self.height // 2,
+                                    text='#%d' % (self.route_id + 1),
+                                    fill='red', font=('Helvetica', 64))
+        self.route_id = (self.route_id + 1) % len(self.routes)
 
     def clear_canvas(self):
         self.canvas.create_rectangle(0, 0, self.width, self.height,
@@ -50,12 +66,13 @@ class MazeVisualizer:
         if event.char == 'c':
             self.clear_canvas()
         if event.char == 's':
-            path = self.algorithm(self.maze)
-            if path:
-                self.draw_path(path)
+            if not self.routes:
+                self.routes = self.algorithm(self.maze)
+            if self.routes:
+                self.draw_next_route()
             else:
                 self.canvas.create_text(self.width // 2, self.height // 2,
-                                        text='No path found!', fill='black',
+                                        text='No route found!', fill='red',
                                         font=('Helvetica', 48))
         elif event.char == 'q':
             self.root.destroy()
@@ -78,10 +95,28 @@ def load_maze(filename):
                 maze.append(line)
         return Maze(start, goal, maze)
 
-def run_simple_maze():
+def view_mazes(directory):
+    for filename in sorted(glob.glob('%s/*/maze.txt' % directory)):
+        print(filename)
+        fields = filename.split(os.sep)
+        title = fields[-2]
+        try:
+            maze = load_maze(filename)
+        except Exception as e:
+            print('Error loading %s: %s' % (filename, e))
+            continue
+        try:
+            MazeVisualizer(maze, dfs, title)
+        except Exception as e:
+            print('Error viewing %s: %s' % (filename, e))
+
+def view_simple_maze():
     maze = load_maze('simple_maze.txt')
     MazeVisualizer(maze, dfs, 'simple maze')
 
 
 if __name__ == '__main__':
-    run_simple_maze()
+    if len(sys.argv) > 1:
+        view_mazes(sys.argv[1])
+    else:
+        view_simple_maze()
