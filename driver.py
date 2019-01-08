@@ -38,7 +38,7 @@ class MazeVisualizer:
                                      y * self.grid_size,
                                      (x+1) * self.grid_size - offset,
                                      (y+1) * self.grid_size - offset,
-                                     fill=color, outline='white')
+                                     fill=color, outline=color)
         if update:
             self.canvas.update()
 
@@ -56,7 +56,7 @@ class MazeVisualizer:
 
     def clear_canvas(self):
         self.canvas.create_rectangle(0, 0, self.width, self.height,
-                                     fill='white')
+                                     fill='black')
         for x in range(self.maze.xmax):
             for y in range(self.maze.ymax):
                 if self.maze.maze[x][y] == '#':
