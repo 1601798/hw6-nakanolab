@@ -10,8 +10,7 @@ class MazeVisualizer:
     def __init__(self, maze, algorithm, title, grid_size=None):
         self.maze = maze
         self.algorithm = algorithm
-        self.routes = []
-        self.route_id = 0
+        self.route = None
         if grid_size:
             self.grid_size = grid_size
         else:
@@ -19,7 +18,8 @@ class MazeVisualizer:
         self.width = self.grid_size * maze.ymax
         self.height = self.grid_size * maze.xmax
         self.root = tk.Tk()
-        self.root.title(title)
+        self.root.title('%s  ("c" to clear / "s" to search / "q" to quit)'
+                        % title)
         self.root.geometry('%dx%d' % (self.width, self.height))
         self.canvas = tk.Canvas(self.root, width=self.width, height=self.height)
         self.canvas.pack()
@@ -42,18 +42,10 @@ class MazeVisualizer:
         if update:
             self.canvas.update()
 
-    def draw_route(self, route):
-        for coordinate in route:
+    def draw_route(self):
+        for coordinate in self.route:
             self.draw_box(coordinate, 'orange', True)
     
-    def draw_next_route(self):
-        self.draw_route(self.routes[self.route_id])
-        if len(self.routes) > 1:
-            self.canvas.create_text(self.width // 2, self.height // 2,
-                                    text='#%d' % (self.route_id + 1),
-                                    fill='red', font=('Helvetica', 64))
-        self.route_id = (self.route_id + 1) % len(self.routes)
-
     def clear_canvas(self):
         self.canvas.create_rectangle(0, 0, self.width, self.height,
                                      fill='black')
@@ -68,10 +60,10 @@ class MazeVisualizer:
         if event.char == 'c':
             self.clear_canvas()
         if event.char == 's':
-            if not self.routes:
-                self.routes = self.algorithm(self.maze)
-            if self.routes:
-                self.draw_next_route()
+            if not self.route:
+                self.route = self.algorithm(self.maze)
+            if self.route:
+                self.draw_route()
             else:
                 self.canvas.create_text(self.width // 2, self.height // 2,
                                         text='No route found!', fill='red',
@@ -112,9 +104,9 @@ def view_maze(title, filename):
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         filenames = sorted(glob.glob('%s/*/maze.txt' % sys.argv[1]))
-        for filename in filenames:
+        for i, filename in enumerate(filenames, 1):
             print(filename)
-            title = filename.split(os.sep)[-2]
+            title = '#%d %s' % (i, filename.split(os.sep)[-2])
             view_maze(title, filename)
     else:
         view_maze('My maze', 'maze.txt')
